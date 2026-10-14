@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#09090b" id="metaThemeColor" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Dayline — Personal productivity and organization workspace for tasks, events, routines, projects, goals, and references." />
+  <title>Dayline — Personal Workspace</title>
+  <link rel="manifest" id="pwaManifestLink" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ======================================================================
+         NAVIGATION (Mobile Bottom Bar / Desktop Left Sidebar)
+         ====================================================================== -->
+    <nav class="nav-bar" aria-label="Workspace Navigation">
+      <div class="nav-brand">
+        <div class="brand-mark">DL</div>
+        <div class="brand-text">
+          <div class="nav-brand-title">Dayline</div>
+          <div class="nav-brand-sub">WORKSPACE OS</div>
+        </div>
+      </div>
+
+      <div class="nav-links" id="navLinks">
+        <!-- Populated by app.js -->
+      </div>
+
+      <div class="nav-footer">
+        <button type="button" class="btn btn-block" id="installPwaBtn" style="display: none;">
+          <span class="icon-slot" data-icon="download"></span>
+          <span>Install App</span>
+        </button>
+        <button type="button" class="btn btn-block" id="desktopDataBtn">
+          <span class="icon-slot" data-icon="database"></span>
+          <span>Workspace Data</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ======================================================================
+         MAIN WORKSPACE AREA
+         ====================================================================== -->
+    <main class="main-area">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <div class="brand-mobile">
+            <div class="brand-mark">DL</div>
+          </div>
+          <div class="header-title-group">
+            <h1 id="viewHeading">Overview</h1>
+            <div class="header-subtitle" id="currentDateLabel"></div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button type="button" class="btn btn-icon" id="quickSearchBtn" title="Search & Review (Ctrl+K or /)">
+            <span class="icon-slot" data-icon="search"></span>
+          </button>
+          <button type="button" class="btn btn-icon" id="themeToggleBtn" title="Toggle Light / Dark Theme">
+            <span class="icon-slot" data-icon="sun"></span>
+          </button>
+          <button type="button" class="btn btn-icon mobile-only" id="mobileDataBtn" title="Backup & Workspace Settings">
+            <span class="icon-slot" data-icon="database"></span>
+          </button>
+          <button type="button" class="btn btn-primary" id="newItemBtn">
+            <span class="icon-slot" data-icon="plus"></span>
+            <span>Capture</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Smart Natural Language Quick Capture Bar -->
+<section class="capture-wrapper" aria-label="Quick Capture">
+  <form class="quick-capture-bar" id="quickCaptureForm" autocomplete="off">
+    <span
+      class="capture-lead-icon icon-slot"
+      data-icon="bolt"
+      aria-hidden="true"
+    ></span>
+
+    <input
+      type="text"
+      id="quickCaptureInput"
+      class="quick-capture-input"
+      placeholder="Capture anything..."
+      aria-label="Capture a task, event, routine, or other item"
+      aria-describedby="capturePreview"
+    />
+
+    <button
+      type="button"
+      class="capture-help-btn"
+      id="captureHelpBtn"
+      aria-label="Quick Capture help"
+      aria-expanded="false"
+      aria-controls="captureHelp"
+      title="Learn capture syntax"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9"></circle>
+        <path d="M9.6 9a2.5 2.5 0 0 1 4.8.8c0 1.7-2.4 2.2-2.4 3.7"></path>
+        <path d="M12 17h.01"></path>
+      </svg>
+    </button>
+
+    <select
+      id="quickCaptureType"
+      class="quick-capture-type"
+      aria-label="Item type"
+    >
+      <option value="task">Task</option>
+      <option value="event">Event</option>
+      <option value="routine">Routine</option>
+      <option value="project">Project</option>
+      <option value="goal">Goal</option>
+      <option value="reference">Reference</option>
+    </select>
+
+    <button type="submit" class="btn btn-sm btn-primary">
+      Add
+    </button>
+  </form>
+
+  <div class="capture-help" id="captureHelp" hidden>
+  <div class="capture-help-heading">
+    <strong>Quick syntax</strong>
+    <button type="button" id="captureHelpClose" aria-label="Close help">×</button>
+  </div>
+  
+  <div class="capture-help-grid">
+    <code>@today</code><span>Schedule today</span>
+    <code>@tomorrow</code><span>Schedule tomorrow</span>
+    <code>@nextweek</code><span>Schedule in 7 days</span>
+    <code>@YYYY-MM-DD</code><span>Schedule a date</span>
+    
+    <code>due:tomorrow</code><span>Set a deadline</span>
+    <code>due:YYYY-MM-DD</code><span>Set a specific deadline</span>
+    
+    <code>!high / !low</code><span>Set priority; default is medium</span>
+    <code>every:day/week/month</code><span>Repeat regularly</span>
+    <code>#project</code><span>Link an existing project</span>
+    <code>https://...</code><span>Attach a link</span>
+  </div>
+  
+  <p class="capture-help-example">
+    <code>Study economics @tomorrow due:2026-10-20 !high #college</code>
+  </p>
+</div>
+
+  <div class="capture-preview" id="capturePreview" hidden></div>
+</section>
+      <!-- Dynamic View Container -->
+      <div id="viewRoot"></div>
+    </main>
+  </div>
+
+  <!-- ========================================================================
+       PERSISTENT FLOATING FOCUS TIMER DOCK
+       ======================================================================== -->
+  <aside class="focus-dock" id="focusDock" hidden aria-live="polite">
+    <div class="focus-dock-info">
+      <span class="focus-pulse"></span>
+      <span class="focus-dock-title" id="focusDockTitle">Focusing...</span>
+    </div>
+    <div class="focus-dock-actions">
+      <span class="focus-dock-clock" id="focusDockClock">25:00</span>
+      <button type="button" class="btn btn-sm" id="dockToggleBtn">Pause</button>
+      <button type="button" class="btn btn-sm" id="dockResetBtn">Reset</button>
+      <button type="button" class="btn btn-sm btn-primary" id="dockDoneBtn">Done</button>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       MODAL 1: CREATE / EDIT ITEM (Polymorphic 6-Type Form)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 id="editorModalTitle">Capture Workspace Item</h2>
+        <button type="button" class="btn btn-icon" id="closeEditorBtn" aria-label="Close">
+          <span class="icon-slot" data-icon="close"></span>
+        </button>
+      </div>
+
+      <form id="itemForm" class="form-grid">
+        <input type="hidden" id="itemIdInput" />
+
+        <div class="field-group">
+          <label class="field-label">Item Category (Core Information Model)</label>
+          <div class="type-selector-grid" id="typeSelectorGrid"></div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="itemTitleInput">Title *</label>
+          <input
+            type="text"
+            id="itemTitleInput"
+            class="field-input"
+            required
+            placeholder="Clear action, event title, routine, outcome, or reference title..."
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="itemDescInput">Description / Notes / Content</label>
+          <textarea
+            id="itemDescInput"
+            class="field-textarea"
+            placeholder="Add context, links, key points, or criteria..."
+          ></textarea>
+        </div>
+
+        <!-- Type-Specific Fields Injected by app.js -->
+        <div id="dynamicFieldsContainer" class="form-grid"></div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn" id="cancelEditorBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: RELATIONAL ENTITY INSPECTOR (Graph Traversal & Subtasks)
+       ======================================================================== -->
+  <div class="modal-backdrop" id="inspectorModal" role="dialog" aria-modal="true">
+    <div class="modal-sheet modal-sheet-wide" id="inspectorContent"></div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 3: WORKSPACE DATA, BACKUP & SETTINGS
+       ======================================================================== -->
+  <div class="modal-backdrop" id="dataModal" role="dialog" aria-modal="true" aria-labelledby="dataModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2 id="dataModalTitle">Workspace Storage & Portability</h2>
+        <button type="button" class="btn btn-icon" id="closeDataModalBtn" aria-label="Close">
+          <span class="icon-slot" data-icon="close"></span>
+        </button>
+      </div>
+
+      <div class="form-grid">
+        <div class="storage-stats-box" id="storageStatsBox"></div>
+
+        <div class="field-group">
+          <label class="field-label">Backup & Restore (JSON)</label>
+          <p class="helper-text">
+            Dayline stores your data locally in your browser. Export a JSON snapshot to back up or transfer your workspace across devices.
+          </p>
+          <div class="button-cluster">
+            <button type="button" class="btn btn-primary" id="exportJsonBtn">
+              <span class="icon-slot" data-icon="download"></span>
+              <span>Export JSON Backup</span>
+            </button>
+            <label class="btn" style="cursor: pointer;">
+              <span class="icon-slot" data-icon="upload"></span>
+              <span>Import JSON Backup</span>
+              <input type="file" id="importJsonInput" accept=".json,application/json" hidden />
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group" style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+          <label class="field-label">Browser Notifications</label>
+          <p class="helper-text">
+            Enable local browser notifications while Dayline is open for Focus Timer completion and scheduled today alerts.
+          </p>
+          <div>
+            <button type="button" class="btn" id="enableNotificationsBtn">
+              <span class="icon-slot" data-icon="bell"></span>
+              <span id="notificationBtnLabel">Enable Browser Notifications</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="field-group" style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
+          <label class="field-label">Workspace State Reset</label>
+          <p class="helper-text">
+            Start fresh with an empty workspace or reload the sample demonstration data.
+          </p>
+          <div class="button-cluster">
+            <button type="button" class="btn" id="resetDemoBtn">Load Sample Workspace</button>
+            <button type="button" class="btn btn-danger" id="clearWorkspaceBtn">Clear All Data (Blank Slate)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       TOAST NOTIFICATION STACK (With Undo Support)
+       ======================================================================== -->
+  <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>
