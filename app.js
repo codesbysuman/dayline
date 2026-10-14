@@ -859,29 +859,6 @@ class DaylineApp {
     
     this.notifiedReminders = new Set();
     this.startReminderWatcher();
-    
-    const updateConnectionStatus = () => {
-      const status = document.getElementById("connectionStatus");
-      if (!status) return;
-      
-      status.textContent = navigator.onLine ?
-        "Online" :
-        "Offline · saved here";
-      
-      status.classList.toggle("is-online", navigator.onLine);
-      status.classList.toggle("is-offline", !navigator.onLine);
-      
-      status.title = navigator.onLine ?
-        "Connected. Your data remains stored locally." :
-        "Offline mode. Changes are saved in this browser and will not sync to other devices.";
-    };
-    
-    window.addEventListener("online", updateConnectionStatus);
-    window.addEventListener("offline", updateConnectionStatus);
-    window.addEventListener("DOMContentLoaded", updateConnectionStatus);
-    
-    setTimeout(updateConnectionStatus, 0);
-    
     this.selectedDate = DateUtils.todayISO();
 
     this.taskFilter = "all";

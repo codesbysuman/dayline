@@ -1628,38 +1628,6 @@ a {
   }
 }
 
-/* Small, accessible connectivity indicator added for offline-first behavior. */
-.connection-status {
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
-  padding: 5px 8px;
-  color: var(--text-secondary);
-  font-size: 10px;
-  line-height: 1.2;
-}
-
-.connection-status.is-offline::before,
-.connection-status.is-online::before {
-  content: "";
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 6px;
-  border-radius: 50%;
-  background: currentColor;
-}
-
-.connection-status.is-offline {
-  color: var(--status-warn);
-}
-
-.connection-status.is-online {
-  color: var(--status-ok);
-}
-
 @media (max-width: 480px) {
   .connection-status {
     font-size: 0;
