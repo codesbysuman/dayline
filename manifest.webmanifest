@@ -1,0 +1,41 @@
+{
+  "id": "./",
+  "name": "Dayline — Tasks, Goals & Daily Progress",
+  "short_name": "Dayline",
+  "description": "A calm personal workspace to capture tasks, plan events, track goals, record progress, and make room for what matters.",
+  "lang": "en",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "./icons/dayline-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/dayline-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/dayline-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

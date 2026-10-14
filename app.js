@@ -770,11 +770,9 @@ const PWAManager = {
   deferredPrompt: null,
 
   init() {
-    this.injectDynamicManifest();
     this.registerServiceWorker();
     this.handleInstallPrompt();
   },
-
   injectDynamicManifest() {
     const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#09090b"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#fafafa" font-family="monospace" font-weight="700" font-size="220">DL</text></svg>`;
     const iconUrl = `data:image/svg+xml;utf8,${encodeURIComponent(iconSvg)}`;
@@ -798,48 +796,55 @@ const PWAManager = {
     if (link) link.href = URL.createObjectURL(blob);
   },
 
-  registerServiceWorker() {
-    if (!("serviceWorker" in navigator)) return;
-    const swCode = `
-      const CACHE_NAME = 'dayline-pwa-v2';
-      self.addEventListener('install', e => { self.skipWaiting(); });
-      self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
-      self.addEventListener('fetch', e => {
-        if (e.request.method !== 'GET') return;
-        e.respondWith(
-          fetch(e.request)
-            .then(res => {
-              const copy = res.clone();
-              caches.open(CACHE_NAME).then(cache => cache.put(e.request, copy));
-              return res;
-            })
-            .catch(() => caches.match(e.request))
-        );
-      });
-    `;
-    try {
-      const blob = new Blob([swCode], { type: "application/javascript" });
-      const swUrl = URL.createObjectURL(blob);
-      navigator.serviceWorker.register(swUrl).catch(() => {});
-    } catch (_) {}
+    registerServiceWorker() {
+    if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
   },
 
-  handleInstallPrompt() {
-    const installBtn = document.getElementById("installPwaBtn");
-    window.addEventListener("beforeinstallprompt", e => {
-      e.preventDefault();
-      this.deferredPrompt = e;
-      if (installBtn) installBtn.style.display = "inline-flex";
+    handleInstallPrompt() {
+    const installBtn = document.getElementById('installPwaBtn');
+    
+    const showInstall = () => {
+      if (installBtn) installBtn.style.display = 'inline-flex';
+    };
+    
+    window.addEventListener('beforeinstallprompt', event => {
+      event.preventDefault();
+      this.deferredPrompt = event;
+      showInstall();
     });
-
+    
+    window.addEventListener('appinstalled', () => {
+      this.deferredPrompt = null;
+      if (installBtn) installBtn.style.display = 'none';
+    });
+    
     if (installBtn) {
-      installBtn.addEventListener("click", async () => {
-        if (!this.deferredPrompt) return;
-        this.deferredPrompt.prompt();
-        await this.deferredPrompt.userChoice;
-        this.deferredPrompt = null;
-        installBtn.style.display = "none";
+      installBtn.addEventListener('click', async () => {
+        if (this.deferredPrompt) {
+          this.deferredPrompt.prompt();
+          await this.deferredPrompt.userChoice;
+          this.deferredPrompt = null;
+          installBtn.style.display = 'none';
+        } else {
+          const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+          
+          window.daylineApp?.showToast(
+            isIOS ?
+            'To install: tap Share, then Add to Home Screen.' :
+            'Use your browser menu and choose Install app or Add to Home screen.'
+          );
+        }
       });
+    }
+    
+    if (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone
+    ) {
+      if (installBtn) installBtn.style.display = 'none';
+    } else {
+      showInstall();
     }
   }
 };
@@ -849,8 +854,34 @@ const PWAManager = {
    ========================================================================== */
 class DaylineApp {
   constructor() {
-    this.store = new WorkspaceStore();
+        this.store = new WorkspaceStore();
     this.currentView = "overview";
+    
+    this.notifiedReminders = new Set();
+    this.startReminderWatcher();
+    
+    const updateConnectionStatus = () => {
+      const status = document.getElementById("connectionStatus");
+      if (!status) return;
+      
+      status.textContent = navigator.onLine ?
+        "Online" :
+        "Offline · saved here";
+      
+      status.classList.toggle("is-online", navigator.onLine);
+      status.classList.toggle("is-offline", !navigator.onLine);
+      
+      status.title = navigator.onLine ?
+        "Connected. Your data remains stored locally." :
+        "Offline mode. Changes are saved in this browser and will not sync to other devices.";
+    };
+    
+    window.addEventListener("online", updateConnectionStatus);
+    window.addEventListener("offline", updateConnectionStatus);
+    window.addEventListener("DOMContentLoaded", updateConnectionStatus);
+    
+    setTimeout(updateConnectionStatus, 0);
+    
     this.selectedDate = DateUtils.todayISO();
 
     this.taskFilter = "all";
@@ -969,16 +1000,7 @@ class DaylineApp {
     });
 
     document.getElementById("newItemBtn").addEventListener("click", () => {
-      const defaultType =
-        this.currentView === "projects"
-          ? "project"
-          : this.currentView === "goals"
-          ? "goal"
-          : this.currentView === "references"
-          ? "reference"
-          : this.currentView === "schedule"
-          ? "event"
-          : "task";
+      const defaultType = this.currentView === "goals" ? "goal" : this.currentView === "references" ? "reference" : "task";
       this.openEditorModal(defaultType);
     });
 
@@ -1121,7 +1143,7 @@ class DaylineApp {
       const perm = await Notification.requestPermission();
       document.getElementById("notificationBtnLabel").textContent =
         perm === "granted" ? "Notifications Enabled ✓" : "Permission Denied";
-      this.showToast(`Notification permission: ${perm}`);
+this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : `Notification permission: ${perm}`);
     });
 
     document.getElementById("resetDemoBtn").addEventListener("click", () => {
@@ -1159,6 +1181,73 @@ class DaylineApp {
       this.saveEditorForm();
     });
   }
+  
+    startReminderWatcher() {
+    const check = () => {
+      if (
+        !('Notification' in window) ||
+        Notification.permission !== 'granted'
+      ) {
+        return;
+      }
+
+      const now = Date.now();
+
+      for (const item of this.store.getAll()) {
+        if (
+          !item.reminderAt ||
+          item.status === 'completed' ||
+          item.status === 'cancelled'
+        ) {
+          continue;
+        }
+
+        const at = new Date(item.reminderAt).getTime();
+        const key = `${item.id}:${item.reminderAt}`;
+
+        if (
+          Number.isFinite(at) &&
+          at <= now &&
+          !this.notifiedReminders.has(key)
+        ) {
+          this.notifiedReminders.add(key);
+
+          try {
+            const opts = {
+              body: item.title,
+              icon: './icons/dayline-192.png',
+              badge: './icons/dayline-192.png',
+              tag: `dayline-${item.id}`,
+              data: { url: './' }
+            };
+
+            if (
+              'serviceWorker' in navigator &&
+              navigator.serviceWorker.controller
+            ) {
+              navigator.serviceWorker.ready
+                .then(reg =>
+                  reg.showNotification('Dayline reminder', opts)
+                )
+                .catch(() =>
+                  new Notification('Dayline reminder', opts)
+                );
+            } else {
+              new Notification('Dayline reminder', opts);
+            }
+          } catch (_) {}
+        }
+      }
+    };
+
+    check();
+
+    window.setInterval(check, 30000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) check();
+    });
+  }
 
   renderStorageStats() {
     const all = this.store.getAll();
@@ -1180,18 +1269,12 @@ class DaylineApp {
     const openTasksCount = this.store
       .getByType("task")
       .filter(t => t.status !== "completed" && t.status !== "cancelled").length;
-    const activeProjectsCount = this.store
-      .getByType("project")
-      .filter(p => p.status === "active").length;
-
-    const navConfig = [
-      { id: "overview", label: "Overview", icon: Icons.dashboard, badge: "" },
-      { id: "tasks", label: "Tasks", icon: Icons.task, badge: openTasksCount },
-      { id: "schedule", label: "Schedule", icon: Icons.event, badge: "" },
-      { id: "projects", label: "Projects", icon: Icons.project, badge: activeProjectsCount },
-      { id: "goals", label: "Goals", icon: Icons.goal, badge: "" },
-      { id: "references", label: "Vault", icon: Icons.reference, badge: "" },
-      //{ id: "search", label: "Review", icon: Icons.search, badge: "" }
+        const navConfig = [
+        { id: "overview", label: "Overview", icon: Icons.dashboard, badge: "" },
+        { id: "tasks", label: "Tasks", icon: Icons.task, badge: openTasksCount },
+        { id: "goals", label: "Goals", icon: Icons.goal, badge: "" },
+        { id: "references", label: "Vault", icon: Icons.reference, badge: "" },
+        //{ id: "search", label: "Review", icon: Icons.search, badge: "" }
     ];
 
     const container = document.getElementById("navLinks");
@@ -1262,9 +1345,8 @@ class DaylineApp {
     const overdue = openTasks.filter(
       t => (t.deadline && t.deadline < today) || (t.plannedDate && t.plannedDate < today)
     );
-    const activeProjects = this.store.getByType("project").filter(p => p.status === "active");
-    const routines = this.store.getByType("routine");
-    const routinesDoneToday = routines.filter(r => (r.completedDates || []).includes(today)).length;
+        const eventsToday = this.store.getByType("event").filter(e => e.startDate === today);
+    const countTracked = tasks.filter(t => t.trackingMode === "count" && t.status !== "completed").length;
 
     const focusRec = FocusEngine.getBestNextTask(this.store);
     const mins = String(Math.floor(this.timerSeconds / 60)).padStart(2, "0");
@@ -1293,15 +1375,16 @@ class DaylineApp {
           <div class="metric-value">${dueToday.length}</div>
           <div class="metric-sub">${DateUtils.formatReadable(today)}</div>
         </div>
-        <div class="metric-card" data-jump="projects">
-          <div class="metric-label">Active Projects</div>
-          <div class="metric-value">${activeProjects.length}</div>
-          <div class="metric-sub">Multi-step outcomes</div>
+                <div class="metric-card" data-jump="tasks">
+          <div class="metric-label">Events Today</div>
+          <div class="metric-value">${eventsToday.length}</div>
+          <div class="metric-sub">Appointments & commitments</div>
         </div>
-        <div class="metric-card" data-jump="schedule">
-          <div class="metric-label">Daily Routines</div>
-          <div class="metric-value">${routinesDoneToday}/${routines.length}</div>
-          <div class="metric-sub">Completed today</div>
+        <div class="metric-card" data-jump="tasks">
+          <div class="metric-label">Counted Tasks</div>
+          <div class="metric-value">${countTracked}</div>
+          <div class="metric-sub">Track progress with +1 records</div>
+        </div>
         </div>
       </div>
 
@@ -1316,7 +1399,7 @@ class DaylineApp {
           <div class="focus-body">
             <div class="focus-main">
               <h3 data-inspect-id="${focusRec.task.id}">${this.escapeHTML(focusRec.task.title)}</h3>
-              <p>${this.escapeHTML(focusRec.task.description || "Highest-leverage next action based on deadlines, priority, and active projects.")}</p>
+                           <p>${this.escapeHTML(focusRec.task.description || "A useful next action based on deadlines, priority, and current progress.")}</p>
             </div>
             <div class="focus-controls">
               <button type="button" class="btn btn-sm" id="startFocusBtn" data-focus-task="${focusRec.task.id}">
@@ -1387,16 +1470,20 @@ class DaylineApp {
           </div>
         </section>
 
-        <section class="panel-box">
+                <section class="panel-box">
           <div class="section-header">
-            <div class="section-title">${Icons.project} <span>Active Projects</span></div>
-            <button type="button" class="btn btn-sm" data-jump="projects">All Projects</button>
+            <div class="section-title">${Icons.event} <span>Upcoming Events</span></div>
+            <button type="button" class="btn btn-sm" id="newEventFromOverview">Add Event</button>
           </div>
           <div class="item-list">
             ${
-              activeProjects.length
-                ? activeProjects.map(p => this.renderProjectCardHTML(p)).join("")
-                : `<div class="empty-state">No active projects. Create one to group related tasks.</div>`
+              this.store.getByType("event")
+                .filter(e => (e.startDate || "") >= today)
+                .sort((a, b) => (a.startDate || "").localeCompare(b.startDate || ""))
+                .slice(0, 5)
+                .map(e => this.renderItemRowHTML(e))
+                .join("")
+              || `<div class="empty-state">No upcoming events. Add an event when something has a specific time or place.</div>`
             }
           </div>
         </section>
@@ -1409,10 +1496,7 @@ class DaylineApp {
     const tasks = this.store
       .getByType("task")
       .filter(t => t.status !== "completed" && (t.plannedDate === isoDate || t.deadline === isoDate)).length;
-    const routines = this.store
-      .getByType("routine")
-      .filter(r => DateUtils.isRoutineActiveOnDate(r, isoDate)).length;
-    return events + tasks + routines;
+    return events + tasks;
   }
 
   buildDayScheduleListHTML(isoDate) {
@@ -1421,21 +1505,16 @@ class DaylineApp {
       .filter(e => e.startDate === isoDate)
       .sort((a, b) => (a.startTime || "99:99").localeCompare(b.startTime || "99:99"));
 
-    const routines = this.store
-      .getByType("routine")
-      .filter(r => DateUtils.isRoutineActiveOnDate(r, isoDate));
-
-    const tasks = this.store
+        const tasks = this.store
       .getByType("task")
       .filter(t => t.plannedDate === isoDate || t.deadline === isoDate);
-
-    if (events.length === 0 && routines.length === 0 && tasks.length === 0) {
+    
+    if (events.length === 0 && tasks.length === 0) {
       return `<div class="empty-state">Nothing scheduled for ${DateUtils.formatReadable(isoDate)}.</div>`;
     }
-
+    
     return [
       ...events.map(e => this.renderItemRowHTML(e, isoDate)),
-      ...routines.map(r => this.renderItemRowHTML(r, isoDate)),
       ...tasks.map(t => this.renderItemRowHTML(t, isoDate))
     ].join("");
   }
@@ -1854,8 +1933,23 @@ class DaylineApp {
       badges.push(`<span class="badge">${doneSub}/${item.subtasks.length} steps</span>`);
     }
 
-    if (isTask && item.focusMinutes > 0) {
+        if (isTask && item.focusMinutes > 0) {
       badges.push(`<span class="badge">${item.focusMinutes}m focused</span>`);
+    }
+    
+    if (isTask && item.trackingMode === "count") {
+      const current = Number(item.countCurrent || 0);
+      const target = Math.max(1, Number(item.countTarget || 1));
+      
+      badges.push(
+        `<span class="badge">${current}/${target} ${this.escapeHTML(item.countUnit || "times")}</span>`
+      );
+    }
+    
+    if (item.reminderAt && item.status !== "completed") {
+      badges.push(
+        `<span class="badge">Reminder ${this.escapeHTML(item.reminderAt.replace('T', ' '))}</span>`
+      );
     }
 
     if (item.type === "event" && item.startDate) {
@@ -1934,7 +2028,7 @@ class DaylineApp {
         <div class="item-actions">
           ${
             isTask && !isCompleted
-              ? `<button type="button" class="action-icon-btn" data-start-focus="${item.id}" title="Start Focus Timer on this task">${Icons.play}</button>`
+              ? `${item.trackingMode === "count" ? `<button type="button" class="action-icon-btn" data-record-count="${item.id}" title="Record progress">+1</button>` : ""}<button type="button" class="action-icon-btn" data-start-focus="${item.id}" title="Start / resume task timer">${Icons.play}</button>`
               : ""
           }
           ${
@@ -2137,8 +2231,40 @@ class DaylineApp {
     document.getElementById("dockToggleBtn").textContent = this.timerRunning ? "Pause" : "Resume";
   }
 
-  bindCollectionEvents() {
-    const root = document.getElementById("viewRoot");
+    bindCollectionEvents() {
+      const root = document.getElementById("viewRoot");
+      
+      root.querySelectorAll("[data-record-count]").forEach(btn =>
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          
+          const item = this.store.getById(btn.dataset.recordCount);
+          if (!item) return;
+          
+          item.countCurrent = Number(item.countCurrent || 0) + 1;
+          
+          item.progressRecords = Array.isArray(item.progressRecords) ?
+            item.progressRecords :
+            [];
+          
+          item.progressRecords.push({
+            value: 1,
+            at: new Date().toISOString()
+          });
+          
+          if (item.countCurrent >= Number(item.countTarget || 1)) {
+            item.status = "completed";
+          }
+          
+          this.store.save();
+          
+          this.showToast(
+            `Recorded progress: ${item.countCurrent}/${item.countTarget}`
+          );
+          
+          this.renderAll();
+        })
+      );
 
     root.querySelectorAll("[data-task-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2537,7 +2663,7 @@ class DaylineApp {
   }
 
   renderTypeSelectorChips(existingItem) {
-    const types = ["task", "event", "routine", "project", "goal", "reference"];
+const types = ["task", "event", "goal", "reference"];
     const grid = document.getElementById("typeSelectorGrid");
     grid.innerHTML = types
       .map(
@@ -2619,6 +2745,28 @@ class DaylineApp {
         </div>
         <div class="form-row-2">
           <div class="field-group">
+            <label class="field-label" for="f_reminderAt">Reminder (optional)</label>
+            <input type="datetime-local" id="f_reminderAt" class="field-input" value="${data.reminderAt || ""}" />
+            <p class="helper-text">Notification is delivered while Dayline is open and permission is granted.</p>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Progress tracking</label>
+            <select id="f_trackingMode" class="field-select">
+              <option value="check" ${!data.trackingMode || data.trackingMode === "check" ? "selected" : ""}>Simple completion</option>
+              <option value="count" ${data.trackingMode === "count" ? "selected" : ""}>Count / quantity</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="field-group">
+            <label class="field-label">Progress target (for count)</label>
+            <input type="number" min="1" step="1" id="f_countTarget" class="field-input" value="${Number(data.countTarget || 1)}" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Unit</label>
+            <input type="text" id="f_countUnit" class="field-input" maxlength="24" placeholder="pages, reps, lessons…" value="${this.escapeHTML(data.countUnit || "times")}" />
+          </div>
+        </div>
             <label class="field-label">Parent Project</label>
             <select id="f_projectId" class="field-select">${projectOptions}</select>
           </div>
@@ -2647,7 +2795,11 @@ class DaylineApp {
           </div>
           <div class="field-group">
             <label class="field-label">End Time</label>
-            <input type="time" id="f_endTime" class="field-input" value="${data.endTime || "10:00"}" />
+        <div class="field-group">
+          <label class="field-label" for="f_reminderAt">Reminder (optional)</label>
+          <input type="datetime-local" id="f_reminderAt" class="field-input" value="${data.reminderAt || ""}" />
+          <p class="helper-text">Notification is delivered while Dayline is open and permission is granted.</p>
+        </div>
           </div>
         </div>
         <div class="form-row-2">
@@ -2766,11 +2918,12 @@ class DaylineApp {
     const description = document.getElementById("itemDescInput").value.trim();
     if (!title) return;
 
-    const val = fieldId => {
-      const el = document.getElementById(fieldId);
+        const val = id => {
+      const el = document.getElementById(id);
       return el ? el.value : "";
     };
-
+    
+    const existingRecord = id ? this.store.getById(id) : null;
     const payload = { id: id || undefined, type, title, description };
 
     if (type === "task") {
@@ -2779,16 +2932,27 @@ class DaylineApp {
       payload.deadline = val("f_deadline");
       payload.priority = val("f_priority");
       payload.status = val("f_status");
-      payload.recurrence = val("f_recurrence");
+            payload.recurrence = val("f_recurrence");
       payload.projectId = val("f_projectId");
       payload.goalId = val("f_goalId");
+      
+      payload.reminderAt = val("f_reminderAt");
+      payload.trackingMode = val("f_trackingMode") || "check";
+      payload.countTarget = Math.max(1, Number(val("f_countTarget") || 1));
+      payload.countCurrent = Math.max(0, Number(existingRecord?.countCurrent || 0));
+      payload.countUnit = val("f_countUnit") || "times";
+      
+      payload.progressRecords = Array.isArray(existingRecord?.progressRecords) ?
+        existingRecord.progressRecords :
+        [];
     } else if (type === "event") {
       payload.startDate = val("f_startDate");
       payload.startTime = val("f_startTime");
       payload.endTime = val("f_endTime");
-      payload.location = val("f_location");
+            payload.location = val("f_location");
       payload.projectId = val("f_projectId");
       payload.goalId = val("f_goalId");
+      payload.reminderAt = val("f_reminderAt");
     } else if (type === "routine") {
       payload.frequency = val("f_frequency");
       payload.preferredTime = val("f_preferredTime");

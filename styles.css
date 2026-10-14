@@ -1627,3 +1627,63 @@ a {
     bottom: 24px;
   }
 }
+
+/* Small, accessible connectivity indicator added for offline-first behavior. */
+.connection-status {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  padding: 5px 8px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.connection-status.is-offline::before,
+.connection-status.is-online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.connection-status.is-offline {
+  color: var(--status-warn);
+}
+
+.connection-status.is-online {
+  color: var(--status-ok);
+}
+
+@media (max-width: 480px) {
+  .connection-status {
+    font-size: 0;
+    padding: 7px;
+  }
+
+  .connection-status::before {
+    margin-right: 0 !important;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 9999;
+  top: 8px;
+  left: 8px;
+  transform: translateY(-160%);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  font-weight: 700;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}

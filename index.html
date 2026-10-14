@@ -2,16 +2,29 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#09090b" id="metaThemeColor" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Dayline — Personal productivity and organization workspace for tasks, events, routines, projects, goals, and references." />
-  <title>Dayline — Personal Workspace</title>
-  <link rel="manifest" id="pwaManifestLink" />
+  <meta name="description" content="Dayline is a calm personal workspace to capture tasks, plan events, track goals, record progress, and build a clearer day." />
+  <meta name="application-name" content="Dayline" />
+  <meta name="apple-mobile-web-app-title" content="Dayline" />
+  <meta name="color-scheme" content="dark light" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Dayline — Make room for what matters" />
+  <meta property="og:description" content="Capture commitments, track progress, and understand where your time goes." />
+  <meta property="og:image" content="./icons/dayline-512.png" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Dayline — Personal Workspace" />
+  <meta name="twitter:description" content="A lightweight workspace for tasks, events, goals, and progress." />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/dayline-192.png" />
+  <title>Dayline — Tasks, Goals & Daily Progress</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#viewRoot">Skip to main content</a>
   <div class="app-shell">
     <!-- ======================================================================
          NAVIGATION (Mobile Bottom Bar / Desktop Left Sidebar)
@@ -57,7 +70,8 @@
           </div>
         </div>
 
-        <div class="header-actions">
+                <div class="header-actions">
+          <span class="connection-status" id="connectionStatus" role="status" aria-live="polite">Offline-ready</span>
           <button type="button" class="btn btn-icon" id="quickSearchBtn" title="Search & Review (Ctrl+K or /)">
             <span class="icon-slot" data-icon="search"></span>
           </button>
@@ -88,7 +102,7 @@
       id="quickCaptureInput"
       class="quick-capture-input"
       placeholder="Capture anything..."
-      aria-label="Capture a task, event, routine, or other item"
+aria-label="Capture a task, event, goal, or reference"
       aria-describedby="capturePreview"
     />
 
@@ -125,8 +139,6 @@
     >
       <option value="task">Task</option>
       <option value="event">Event</option>
-      <option value="routine">Routine</option>
-      <option value="project">Project</option>
       <option value="goal">Goal</option>
       <option value="reference">Reference</option>
     </select>
@@ -152,8 +164,9 @@
     <code>due:YYYY-MM-DD</code><span>Set a specific deadline</span>
     
     <code>!high / !low</code><span>Set priority; default is medium</span>
-    <code>every:day/week/month</code><span>Repeat regularly</span>
-    <code>#project</code><span>Link an existing project</span>
+    <code>every:day/week/month</code><span>Repeat a task</span>
+    <code>remind:2026-10-14T18:30</code><span>Set a reminder (while Dayline is open)</span>
+    <code>count:0/10</code><span>Track countable progress in the task editor</span>
     <code>https://...</code><span>Attach a link</span>
   </div>
   
@@ -261,7 +274,7 @@
         <div class="field-group">
           <label class="field-label">Backup & Restore (JSON)</label>
           <p class="helper-text">
-            Dayline stores your data locally in your browser. Export a JSON snapshot to back up or transfer your workspace across devices.
+Dayline stores your data on this device in this browser. After the first online visit, the app shell can open offline. Export a JSON snapshot to back up or transfer your workspace; offline edits do not sync between devices.
           </p>
           <div class="button-cluster">
             <button type="button" class="btn btn-primary" id="exportJsonBtn">
@@ -277,9 +290,9 @@
         </div>
 
         <div class="field-group" style="padding-top: 10px; border-top: 1px solid var(--border-subtle);">
-          <label class="field-label">Browser Notifications</label>
+          <label class="field-label">Reminders & Notifications</label>
           <p class="helper-text">
-            Enable local browser notifications while Dayline is open for Focus Timer completion and scheduled today alerts.
+            Allow notifications for reminders and focus sessions. Scheduled reminders are checked while Dayline is open; reliable background delivery requires platform push support and cannot be guaranteed by a static offline app.
           </p>
           <div>
             <button type="button" class="btn" id="enableNotificationsBtn">

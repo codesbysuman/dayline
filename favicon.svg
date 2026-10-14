@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100%" height="100%">
+  <!-- 'd' -->
+  <path d="M4 6h3v10.5c1.2-1.1 2.8-1.5 4.5-1.5 3.3 0 6 2.7 6 6s-2.7 6-6 6c-1.7 0-3.3-0.4-4.5-1.5V26H4V6zm3 10.5c1.9 0 3.5 1.6 3.5 3.5s-1.6 3.5-3.5 3.5-3.5-1.6-3.5-3.5 1.6-3.5 3.5-3.5z" fill="currentColor"/>
+  <!-- 'l' integrated with a timeline baseline -->
+  <path d="M19 6h3v16h4v3h-7V6z" fill="currentColor"/>
+</svg>
