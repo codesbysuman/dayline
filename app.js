@@ -60,7 +60,7 @@ const SoundFX = {
         osc.start(now);
         osc.stop(now + 0.65);
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 };
 
@@ -682,7 +682,7 @@ class WorkspaceStore {
     if (linkedProjects.length > 0) {
       const avg = Math.round(
         linkedProjects.reduce((acc, p) => acc + this.computeProjectProgress(p).percent, 0) /
-          linkedProjects.length
+        linkedProjects.length
       );
       return { percent: avg, label: `${linkedProjects.length} linked project(s)` };
     }
@@ -796,29 +796,29 @@ const PWAManager = {
     if (link) link.href = URL.createObjectURL(blob);
   },
 
-    registerServiceWorker() {
+  registerServiceWorker() {
     if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
-    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => {});
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(() => { });
   },
 
-    handleInstallPrompt() {
+  handleInstallPrompt() {
     const installBtn = document.getElementById('installPwaBtn');
-    
+
     const showInstall = () => {
       if (installBtn) installBtn.style.display = 'inline-flex';
     };
-    
+
     window.addEventListener('beforeinstallprompt', event => {
       event.preventDefault();
       this.deferredPrompt = event;
       showInstall();
     });
-    
+
     window.addEventListener('appinstalled', () => {
       this.deferredPrompt = null;
       if (installBtn) installBtn.style.display = 'none';
     });
-    
+
     if (installBtn) {
       installBtn.addEventListener('click', async () => {
         if (this.deferredPrompt) {
@@ -828,16 +828,16 @@ const PWAManager = {
           installBtn.style.display = 'none';
         } else {
           const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-          
+
           window.daylineApp?.showToast(
             isIOS ?
-            'To install: tap Share, then Add to Home Screen.' :
-            'Use your browser menu and choose Install app or Add to Home screen.'
+              'To install: tap Share, then Add to Home Screen.' :
+              'Use your browser menu and choose Install app or Add to Home screen.'
           );
         }
       });
     }
-    
+
     if (
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone
@@ -854,9 +854,9 @@ const PWAManager = {
    ========================================================================== */
 class DaylineApp {
   constructor() {
-        this.store = new WorkspaceStore();
+    this.store = new WorkspaceStore();
     this.currentView = "overview";
-    
+
     this.notifiedReminders = new Set();
     this.startReminderWatcher();
     this.selectedDate = DateUtils.todayISO();
@@ -1120,7 +1120,7 @@ class DaylineApp {
       const perm = await Notification.requestPermission();
       document.getElementById("notificationBtnLabel").textContent =
         perm === "granted" ? "Notifications Enabled ✓" : "Permission Denied";
-this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : `Notification permission: ${perm}`);
+      this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : `Notification permission: ${perm}`);
     });
 
     document.getElementById("resetDemoBtn").addEventListener("click", () => {
@@ -1158,8 +1158,8 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       this.saveEditorForm();
     });
   }
-  
-    startReminderWatcher() {
+
+  startReminderWatcher() {
     const check = () => {
       if (
         !('Notification' in window) ||
@@ -1212,7 +1212,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             } else {
               new Notification('Dayline reminder', opts);
             }
-          } catch (_) {}
+          } catch (_) { }
         }
       }
     };
@@ -1246,12 +1246,12 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
     const openTasksCount = this.store
       .getByType("task")
       .filter(t => t.status !== "completed" && t.status !== "cancelled").length;
-        const navConfig = [
-        { id: "overview", label: "Overview", icon: Icons.dashboard, badge: "" },
-        { id: "tasks", label: "Tasks", icon: Icons.task, badge: openTasksCount },
-        { id: "goals", label: "Goals", icon: Icons.goal, badge: "" },
-        { id: "references", label: "Vault", icon: Icons.reference, badge: "" },
-        //{ id: "search", label: "Review", icon: Icons.search, badge: "" }
+    const navConfig = [
+      { id: "overview", label: "Overview", icon: Icons.dashboard, badge: "" },
+      { id: "tasks", label: "Tasks", icon: Icons.task, badge: openTasksCount },
+      { id: "goals", label: "Goals", icon: Icons.goal, badge: "" },
+      { id: "references", label: "Vault", icon: Icons.reference, badge: "" },
+      //{ id: "search", label: "Review", icon: Icons.search, badge: "" }
     ];
 
     const container = document.getElementById("navLinks");
@@ -1322,7 +1322,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
     const overdue = openTasks.filter(
       t => (t.deadline && t.deadline < today) || (t.plannedDate && t.plannedDate < today)
     );
-        const eventsToday = this.store.getByType("event").filter(e => e.startDate === today);
+    const eventsToday = this.store.getByType("event").filter(e => e.startDate === today);
     const countTracked = tasks.filter(t => t.trackingMode === "count" && t.status !== "completed").length;
 
     const focusRec = FocusEngine.getBestNextTask(this.store);
@@ -1365,9 +1365,8 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
         </div>
       </div>
 
-      ${
-        focusRec
-          ? `
+      ${focusRec
+        ? `
         <section class="focus-card">
           <div class="focus-header">
             <span class="focus-tag">${Icons.bolt} Focus Suggestion</span>
@@ -1391,7 +1390,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </section>
       `
-          : ""
+        : ""
       }
 
       <section class="dayline-section">
@@ -1410,21 +1409,21 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
 
         <div class="week-strip">
           ${weekDays
-            .map(d => {
-              const count = this.countItemsOnDate(d.iso);
-              return `
+        .map(d => {
+          const count = this.countItemsOnDate(d.iso);
+          return `
                 <div class="day-cell ${d.iso === today ? "today" : ""} ${d.iso === this.selectedDate ? "selected" : ""}" data-select-date="${d.iso}">
                   <span class="day-name">${d.name}</span>
                   <span class="day-num">${d.dayNum}</span>
                   <div class="day-dots">
                     ${Array.from({ length: Math.min(count, 3) })
-                      .map(() => `<span class="day-dot"></span>`)
-                      .join("")}
+              .map(() => `<span class="day-dot"></span>`)
+              .join("")}
                   </div>
                 </div>
               `;
-            })
-            .join("")}
+        })
+        .join("")}
         </div>
 
         <div class="item-list">
@@ -1439,11 +1438,10 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             <button type="button" class="btn btn-sm" data-jump="tasks">All Tasks</button>
           </div>
           <div class="item-list">
-            ${
-              sortedTasks.length
-                ? sortedTasks.slice(0, 6).map(t => this.renderItemRowHTML(t)).join("")
-                : `<div class="empty-state">All tasks complete! Use Quick Capture above to add new work.</div>`
-            }
+            ${sortedTasks.length
+        ? sortedTasks.slice(0, 6).map(t => this.renderItemRowHTML(t)).join("")
+        : `<div class="empty-state">All tasks complete! Use Quick Capture above to add new work.</div>`
+      }
           </div>
         </section>
 
@@ -1453,15 +1451,14 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             <button type="button" class="btn btn-sm" id="newEventFromOverview">Add Event</button>
           </div>
           <div class="item-list">
-            ${
-              this.store.getByType("event")
-                .filter(e => (e.startDate || "") >= today)
-                .sort((a, b) => (a.startDate || "").localeCompare(b.startDate || ""))
-                .slice(0, 5)
-                .map(e => this.renderItemRowHTML(e))
-                .join("")
-              || `<div class="empty-state">No upcoming events. Add an event when something has a specific time or place.</div>`
-            }
+            ${this.store.getByType("event")
+        .filter(e => (e.startDate || "") >= today)
+        .sort((a, b) => (a.startDate || "").localeCompare(b.startDate || ""))
+        .slice(0, 5)
+        .map(e => this.renderItemRowHTML(e))
+        .join("")
+      || `<div class="empty-state">No upcoming events. Add an event when something has a specific time or place.</div>`
+      }
           </div>
         </section>
       </div>
@@ -1482,14 +1479,14 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       .filter(e => e.startDate === isoDate)
       .sort((a, b) => (a.startTime || "99:99").localeCompare(b.startTime || "99:99"));
 
-        const tasks = this.store
+    const tasks = this.store
       .getByType("task")
       .filter(t => t.plannedDate === isoDate || t.deadline === isoDate);
-    
+
     if (events.length === 0 && tasks.length === 0) {
       return `<div class="empty-state">Nothing scheduled for ${DateUtils.formatReadable(isoDate)}.</div>`;
     }
-    
+
     return [
       ...events.map(e => this.renderItemRowHTML(e, isoDate)),
       ...tasks.map(t => this.renderItemRowHTML(t, isoDate))
@@ -1533,35 +1530,33 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       bodyHTML = `
         <div class="kanban-grid">
           ${cols
-            .map(col => {
-              const colTasks = allTasks.filter(t => (t.status || "open") === col.key);
-              return `
+          .map(col => {
+            const colTasks = allTasks.filter(t => (t.status || "open") === col.key);
+            return `
                 <div class="kanban-col">
                   <div class="kanban-col-header">
                     <span>${col.title}</span>
                     <span>${colTasks.length}</span>
                   </div>
                   <div class="item-list">
-                    ${
-                      colTasks.length
-                        ? colTasks.map(t => this.renderItemRowHTML(t)).join("")
-                        : `<div class="empty-state" style="padding:14px;">Empty</div>`
-                    }
+                    ${colTasks.length
+                ? colTasks.map(t => this.renderItemRowHTML(t)).join("")
+                : `<div class="empty-state" style="padding:14px;">Empty</div>`
+              }
                   </div>
                 </div>
               `;
-            })
-            .join("")}
+          })
+          .join("")}
         </div>
       `;
     } else {
       bodyHTML = `
         <div class="item-list">
-          ${
-            filtered.length
-              ? filtered.map(t => this.renderItemRowHTML(t)).join("")
-              : `<div class="empty-state">No tasks match this filter.</div>`
-          }
+          ${filtered.length
+          ? filtered.map(t => this.renderItemRowHTML(t)).join("")
+          : `<div class="empty-state">No tasks match this filter.</div>`
+        }
         </div>
       `;
     }
@@ -1570,14 +1565,14 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       <div class="toolbar-row">
         <div class="filter-bar">
           ${filters
-            .map(
-              f => `
+        .map(
+          f => `
             <button type="button" class="filter-pill ${this.taskFilter === f.id && this.taskLayout === "list" ? "active" : ""}" data-task-filter="${f.id}">
               ${f.label}
             </button>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         <div style="display:flex; gap:6px;">
           <button type="button" class="btn btn-sm ${this.taskLayout === "list" ? "btn-primary" : ""}" data-task-layout="list">List View</button>
@@ -1603,11 +1598,10 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             <button type="button" class="btn btn-sm btn-primary" data-open-create="event">+ Event</button>
           </div>
           <div class="item-list">
-            ${
-              events.length
-                ? events.map(e => this.renderItemRowHTML(e)).join("")
-                : `<div class="empty-state">No upcoming events scheduled.</div>`
-            }
+            ${events.length
+        ? events.map(e => this.renderItemRowHTML(e)).join("")
+        : `<div class="empty-state">No upcoming events scheduled.</div>`
+      }
           </div>
         </section>
 
@@ -1617,13 +1611,12 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             <button type="button" class="btn btn-sm btn-primary" data-open-create="routine">+ Routine</button>
           </div>
           <div class="item-list">
-            ${
-              routines.length
-                ? routines
-                    .map(r => {
-                      const streak = DateUtils.calculateRoutineStreak(r);
-                      const completedSet = new Set(r.completedDates || []);
-                      return `
+            ${routines.length
+        ? routines
+          .map(r => {
+            const streak = DateUtils.calculateRoutineStreak(r);
+            const completedSet = new Set(r.completedDates || []);
+            return `
                         <div class="item-row" style="flex-direction:column; align-items:stretch;">
                           <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
                             <div class="item-content" data-inspect-id="${r.id}">
@@ -1640,9 +1633,9 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
                           </div>
                           <div class="routine-matrix-row">
                             ${last7Days
-                              .map(d => {
-                                const done = completedSet.has(d.iso);
-                                return `
+                .map(d => {
+                  const done = completedSet.has(d.iso);
+                  return `
                                   <button
                                     type="button"
                                     class="matrix-day-btn ${done ? "done" : ""}"
@@ -1654,15 +1647,15 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
                                     <span>${d.dayNum}</span>
                                   </button>
                                 `;
-                              })
-                              .join("")}
+                })
+                .join("")}
                           </div>
                         </div>
                       `;
-                    })
-                    .join("")
-                : `<div class="empty-state">No routines established yet.</div>`
-            }
+          })
+          .join("")
+        : `<div class="empty-state">No routines established yet.</div>`
+      }
           </div>
         </section>
       </div>
@@ -1681,23 +1674,22 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       <div class="toolbar-row">
         <div class="filter-bar">
           ${states
-            .map(
-              s => `
+        .map(
+          s => `
             <button type="button" class="filter-pill ${this.projectFilter === s ? "active" : ""}" data-project-filter="${s}">
               ${s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         <button type="button" class="btn btn-sm btn-primary" data-open-create="project">+ New Project</button>
       </div>
       <div class="cards-grid">
-        ${
-          filtered.length
-            ? filtered.map(p => this.renderProjectCardHTML(p)).join("")
-            : `<div class="empty-state">No projects in this lifecycle state.</div>`
-        }
+        ${filtered.length
+        ? filtered.map(p => this.renderProjectCardHTML(p)).join("")
+        : `<div class="empty-state">No projects in this lifecycle state.</div>`
+      }
       </div>
     `;
   }
@@ -1712,11 +1704,10 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
         <button type="button" class="btn btn-sm btn-primary" data-open-create="goal">+ New Goal</button>
       </div>
       <div class="cards-grid">
-        ${
-          goals.length
-            ? goals.map(g => this.renderGoalCardHTML(g)).join("")
-            : `<div class="empty-state">No goals defined yet.</div>`
-        }
+        ${goals.length
+        ? goals.map(g => this.renderGoalCardHTML(g)).join("")
+        : `<div class="empty-state">No goals defined yet.</div>`
+      }
       </div>
     `;
   }
@@ -1743,23 +1734,22 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       <div class="toolbar-row">
         <div class="filter-bar">
           ${tags
-            .map(
-              t => `
+        .map(
+          t => `
             <button type="button" class="filter-pill ${this.refTagFilter === t ? "active" : ""}" data-ref-tag="${this.escapeHTML(t)}">
               ${t === "all" ? "All References" : `#${this.escapeHTML(t)}`}
             </button>
           `
-            )
-            .join("")}
+        )
+        .join("")}
         </div>
         <button type="button" class="btn btn-sm btn-primary" data-open-create="reference">+ Save Reference</button>
       </div>
       <div class="item-list">
-        ${
-          filtered.length
-            ? filtered.map(r => this.renderItemRowHTML(r)).join("")
-            : `<div class="empty-state">No references saved under this tag.</div>`
-        }
+        ${filtered.length
+        ? filtered.map(r => this.renderItemRowHTML(r)).join("")
+        : `<div class="empty-state">No references saved under this tag.</div>`
+      }
       </div>
     `;
   }
@@ -1835,11 +1825,10 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       </div>
 
       <div class="item-list" id="searchResultsContainer">
-        ${
-          results.length
-            ? results.map(item => this.renderItemRowHTML(item)).join("")
-            : `<div class="empty-state">No matching items found.</div>`
-        }
+        ${results.length
+        ? results.map(item => this.renderItemRowHTML(item)).join("")
+        : `<div class="empty-state">No matching items found.</div>`
+      }
       </div>
     `;
   }
@@ -1892,8 +1881,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
     if (item.plannedDate) {
       const isOver = item.status !== "completed" && item.plannedDate < today;
       badges.push(
-        `<span class="badge ${isOver ? "badge-urgent" : ""}">Planned: ${DateUtils.formatReadable(item.plannedDate)}${
-          item.plannedTime ? ` ${item.plannedTime}` : ""
+        `<span class="badge ${isOver ? "badge-urgent" : ""}">Planned: ${DateUtils.formatReadable(item.plannedDate)}${item.plannedTime ? ` ${item.plannedTime}` : ""
         }</span>`
       );
     }
@@ -1910,19 +1898,19 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       badges.push(`<span class="badge">${doneSub}/${item.subtasks.length} steps</span>`);
     }
 
-        if (isTask && item.focusMinutes > 0) {
+    if (isTask && item.focusMinutes > 0) {
       badges.push(`<span class="badge">${item.focusMinutes}m focused</span>`);
     }
-    
+
     if (isTask && item.trackingMode === "count") {
       const current = Number(item.countCurrent || 0);
       const target = Math.max(1, Number(item.countTarget || 1));
-      
+
       badges.push(
         `<span class="badge">${current}/${target} ${this.escapeHTML(item.countUnit || "times")}</span>`
       );
     }
-    
+
     if (item.reminderAt && item.status !== "completed") {
       badges.push(
         `<span class="badge">Reminder ${this.escapeHTML(item.reminderAt.replace('T', ' '))}</span>`
@@ -1931,8 +1919,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
 
     if (item.type === "event" && item.startDate) {
       badges.push(
-        `<span class="badge">${DateUtils.formatReadable(item.startDate)} ${item.startTime || ""}${
-          item.endTime ? `–${item.endTime}` : ""
+        `<span class="badge">${DateUtils.formatReadable(item.startDate)} ${item.startTime || ""}${item.endTime ? `–${item.endTime}` : ""
         }</span>`
       );
       if (item.location) badges.push(`<span class="badge">${this.escapeHTML(item.location)}</span>`);
@@ -1983,14 +1970,12 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
     }
 
     const leftControl = isTask
-      ? `<button type="button" class="check-btn ${isCompleted ? "checked" : ""}" data-complete-task="${item.id}" title="Complete task">${
-          isCompleted ? Icons.check : ""
-        }</button>`
+      ? `<button type="button" class="check-btn ${isCompleted ? "checked" : ""}" data-complete-task="${item.id}" title="Complete task">${isCompleted ? Icons.check : ""
+      }</button>`
       : isRoutine
-      ? `<button type="button" class="check-btn ${isCompleted ? "checked" : ""}" data-complete-routine="${item.id}" data-routine-date="${contextDate}" title="Toggle routine for ${contextDate}">${
-          isCompleted ? Icons.check : ""
+        ? `<button type="button" class="check-btn ${isCompleted ? "checked" : ""}" data-complete-routine="${item.id}" data-routine-date="${contextDate}" title="Toggle routine for ${contextDate}">${isCompleted ? Icons.check : ""
         }</button>`
-      : `<div class="item-type-icon">${Icons[item.type] || Icons.task}</div>`;
+        : `<div class="item-type-icon">${Icons[item.type] || Icons.task}</div>`;
 
     return `
       <div class="item-row ${isCompleted ? "completed" : ""}">
@@ -2003,16 +1988,14 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </div>
         <div class="item-actions">
-          ${
-            isTask && !isCompleted
-              ? `${item.trackingMode === "count" ? `<button type="button" class="action-icon-btn" data-record-count="${item.id}" title="Record progress">+1</button>` : ""}<button type="button" class="action-icon-btn" data-start-focus="${item.id}" title="Start / resume task timer">${Icons.play}</button>`
-              : ""
-          }
-          ${
-            item.type === "reference"
-              ? `<button type="button" class="action-icon-btn" data-copy-ref="${item.id}" title="Copy reference content">${Icons.copy}</button>`
-              : ""
-          }
+          ${isTask && !isCompleted
+        ? `${item.trackingMode === "count" ? `<button type="button" class="action-icon-btn" data-record-count="${item.id}" title="Record progress">+1</button>` : ""}<button type="button" class="action-icon-btn" data-start-focus="${item.id}" title="Start / resume task timer">${Icons.play}</button>`
+        : ""
+      }
+          ${item.type === "reference"
+        ? `<button type="button" class="action-icon-btn" data-copy-ref="${item.id}" title="Copy reference content">${Icons.copy}</button>`
+        : ""
+      }
           <button type="button" class="action-icon-btn" data-edit-id="${item.id}" title="Edit">${Icons.edit}</button>
           <button type="button" class="action-icon-btn" data-delete-id="${item.id}" title="Delete">${Icons.trash}</button>
         </div>
@@ -2208,40 +2191,40 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
     document.getElementById("dockToggleBtn").textContent = this.timerRunning ? "Pause" : "Resume";
   }
 
-    bindCollectionEvents() {
-      const root = document.getElementById("viewRoot");
-      
-      root.querySelectorAll("[data-record-count]").forEach(btn =>
-        btn.addEventListener("click", e => {
-          e.stopPropagation();
-          
-          const item = this.store.getById(btn.dataset.recordCount);
-          if (!item) return;
-          
-          item.countCurrent = Number(item.countCurrent || 0) + 1;
-          
-          item.progressRecords = Array.isArray(item.progressRecords) ?
-            item.progressRecords :
-            [];
-          
-          item.progressRecords.push({
-            value: 1,
-            at: new Date().toISOString()
-          });
-          
-          if (item.countCurrent >= Number(item.countTarget || 1)) {
-            item.status = "completed";
-          }
-          
-          this.store.save();
-          
-          this.showToast(
-            `Recorded progress: ${item.countCurrent}/${item.countTarget}`
-          );
-          
-          this.renderAll();
-        })
-      );
+  bindCollectionEvents() {
+    const root = document.getElementById("viewRoot");
+
+    root.querySelectorAll("[data-record-count]").forEach(btn =>
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+
+        const item = this.store.getById(btn.dataset.recordCount);
+        if (!item) return;
+
+        item.countCurrent = Number(item.countCurrent || 0) + 1;
+
+        item.progressRecords = Array.isArray(item.progressRecords) ?
+          item.progressRecords :
+          [];
+
+        item.progressRecords.push({
+          value: 1,
+          at: new Date().toISOString()
+        });
+
+        if (item.countCurrent >= Number(item.countTarget || 1)) {
+          item.status = "completed";
+        }
+
+        this.store.save();
+
+        this.showToast(
+          `Recorded progress: ${item.countCurrent}/${item.countTarget}`
+        );
+
+        this.renderAll();
+      })
+    );
 
     root.querySelectorAll("[data-task-filter]").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2431,8 +2414,8 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
       </div>
 
       <p style="font-size:13px; color:var(--text-secondary); white-space:pre-wrap;">${this.escapeHTML(
-        item.description || "No additional notes."
-      )}</p>
+      item.description || "No additional notes."
+    )}</p>
 
       <div class="item-meta" style="margin-top:12px;">
         ${item.status ? `<span class="badge badge-info">Status: ${item.status}</span>` : ""}
@@ -2440,25 +2423,22 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
         ${item.plannedDate ? `<span class="badge">Planned: ${item.plannedDate}</span>` : ""}
         ${item.deadline ? `<span class="badge badge-warn">Deadline: ${item.deadline}</span>` : ""}
         ${item.targetDate ? `<span class="badge">Target Date: ${item.targetDate}</span>` : ""}
-        ${
-          parentGoal
-            ? `<span class="badge badge-link" data-jump-inspect="${parentGoal.id}">${Icons.goal} Goal:${this.escapeHTML(
-                parentGoal.title
-              )}</span>`
-            : ""
-        }
-        ${
-          parentProject
-            ? `<span class="badge badge-link" data-jump-inspect="${parentProject.id}">${Icons.project} Project:${this.escapeHTML(
-                parentProject.title
-              )}</span>`
-            : ""
-        }
+        ${parentGoal
+        ? `<span class="badge badge-link" data-jump-inspect="${parentGoal.id}">${Icons.goal} Goal:${this.escapeHTML(
+          parentGoal.title
+        )}</span>`
+        : ""
+      }
+        ${parentProject
+        ? `<span class="badge badge-link" data-jump-inspect="${parentProject.id}">${Icons.project} Project:${this.escapeHTML(
+          parentProject.title
+        )}</span>`
+        : ""
+      }
       </div>
 
-      ${
-        item.type === "task"
-          ? `
+      ${item.type === "task"
+        ? `
         <div class="inspector-section">
           <h4>Action Steps / Sub-Checklist (${subtasks.filter(s => s.done).length}/${subtasks.length})</h4>
           <form class="subtask-inline-form" id="addSubtaskForm">
@@ -2466,11 +2446,10 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
             <button type="submit" class="btn btn-sm btn-primary">Add Step</button>
           </form>
           <div class="item-list">
-            ${
-              subtasks.length
-                ? subtasks
-                    .map(
-                      st => `
+            ${subtasks.length
+          ? subtasks
+            .map(
+              st => `
                   <div class="item-row ${st.done ? "completed" : ""}" style="padding:8px 10px;">
                     <div class="item-left">
                       <button type="button" class="check-btn ${st.done ? "checked" : ""}" data-toggle-subtask="${st.id}">
@@ -2481,19 +2460,18 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
                     <button type="button" class="action-icon-btn" data-delete-subtask="${st.id}">${Icons.trash}</button>
                   </div>
                 `
-                    )
-                    .join("")
-                : `<div class="empty-state" style="padding:12px;">Break this task into smaller steps above.</div>`
-            }
+            )
+            .join("")
+          : `<div class="empty-state" style="padding:12px;">Break this task into smaller steps above.</div>`
+        }
           </div>
         </div>
       `
-          : ""
+        : ""
       }
 
-      ${
-        childProjects.length
-          ? `
+      ${childProjects.length
+        ? `
         <div class="inspector-section">
           <h4>Associated Projects (${childProjects.length})</h4>
           <div class="item-list">
@@ -2501,12 +2479,11 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </div>
       `
-          : ""
+        : ""
       }
 
-      ${
-        childTasks.length
-          ? `
+      ${childTasks.length
+        ? `
         <div class="inspector-section">
           <h4>Associated Tasks (${childTasks.length})</h4>
           <div class="item-list">
@@ -2514,12 +2491,11 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </div>
       `
-          : ""
+        : ""
       }
 
-      ${
-        childRoutines.length
-          ? `
+      ${childRoutines.length
+        ? `
         <div class="inspector-section">
           <h4>Supporting Routines (${childRoutines.length})</h4>
           <div class="item-list">
@@ -2527,12 +2503,11 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </div>
       `
-          : ""
+        : ""
       }
 
-      ${
-        childRefs.length
-          ? `
+      ${childRefs.length
+        ? `
         <div class="inspector-section">
           <h4>Linked Reference Material (${childRefs.length})</h4>
           <div class="item-list">
@@ -2540,16 +2515,15 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
           </div>
         </div>
       `
-          : ""
+        : ""
       }
 
       <div class="modal-footer">
         <button type="button" class="btn" id="inspectorEditBtn">${Icons.edit} Edit ${item.type}</button>
-        ${
-          item.type === "project" || item.type === "goal"
-            ? `<button type="button" class="btn btn-primary" id="inspectorAddTaskBtn">+ Add Linked Task</button>`
-            : ""
-        }
+        ${item.type === "project" || item.type === "goal"
+        ? `<button type="button" class="btn btn-primary" id="inspectorAddTaskBtn">+ Add Linked Task</button>`
+        : ""
+      }
       </div>
     `;
 
@@ -2640,7 +2614,7 @@ this.showToast(perm === "granted" ? "Reminders enabled while Dayline is open" : 
   }
 
   renderTypeSelectorChips(existingItem) {
-const types = ["task", "event", "goal", "reference"];
+    const types = ["task", "event", "goal", "reference"];
     const grid = document.getElementById("typeSelectorGrid");
     grid.innerHTML = types
       .map(
@@ -2895,11 +2869,11 @@ const types = ["task", "event", "goal", "reference"];
     const description = document.getElementById("itemDescInput").value.trim();
     if (!title) return;
 
-        const val = id => {
+    const val = id => {
       const el = document.getElementById(id);
       return el ? el.value : "";
     };
-    
+
     const existingRecord = id ? this.store.getById(id) : null;
     const payload = { id: id || undefined, type, title, description };
 
@@ -2909,16 +2883,16 @@ const types = ["task", "event", "goal", "reference"];
       payload.deadline = val("f_deadline");
       payload.priority = val("f_priority");
       payload.status = val("f_status");
-            payload.recurrence = val("f_recurrence");
+      payload.recurrence = val("f_recurrence");
       payload.projectId = val("f_projectId");
       payload.goalId = val("f_goalId");
-      
+
       payload.reminderAt = val("f_reminderAt");
       payload.trackingMode = val("f_trackingMode") || "check";
       payload.countTarget = Math.max(1, Number(val("f_countTarget") || 1));
       payload.countCurrent = Math.max(0, Number(existingRecord?.countCurrent || 0));
       payload.countUnit = val("f_countUnit") || "times";
-      
+
       payload.progressRecords = Array.isArray(existingRecord?.progressRecords) ?
         existingRecord.progressRecords :
         [];
@@ -2926,7 +2900,7 @@ const types = ["task", "event", "goal", "reference"];
       payload.startDate = val("f_startDate");
       payload.startTime = val("f_startTime");
       payload.endTime = val("f_endTime");
-            payload.location = val("f_location");
+      payload.location = val("f_location");
       payload.projectId = val("f_projectId");
       payload.goalId = val("f_goalId");
       payload.reminderAt = val("f_reminderAt");
@@ -2968,27 +2942,27 @@ const types = ["task", "event", "goal", "reference"];
 window.addEventListener("DOMContentLoaded", () => {
   window.daylineApp = new DaylineApp();
   const captureHelpBtn = document.getElementById("captureHelpBtn");
-const captureHelp = document.getElementById("captureHelp");
-const captureHelpClose = document.getElementById("captureHelpClose");
+  const captureHelp = document.getElementById("captureHelp");
+  const captureHelpClose = document.getElementById("captureHelpClose");
 
-function setCaptureHelpOpen(open) {
-  captureHelp.hidden = !open;
-  captureHelpBtn.setAttribute("aria-expanded", String(open));
-}
+  function setCaptureHelpOpen(open) {
+    captureHelp.hidden = !open;
+    captureHelpBtn.setAttribute("aria-expanded", String(open));
+  }
 
-captureHelpBtn.addEventListener("click", () => {
-  setCaptureHelpOpen(captureHelp.hidden);
-});
+  captureHelpBtn.addEventListener("click", () => {
+    setCaptureHelpOpen(captureHelp.hidden);
+  });
 
-captureHelpClose.addEventListener("click", () => {
-  setCaptureHelpOpen(false);
-  captureHelpBtn.focus();
-});
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape" && !captureHelp.hidden) {
+  captureHelpClose.addEventListener("click", () => {
     setCaptureHelpOpen(false);
     captureHelpBtn.focus();
-  }
-});
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !captureHelp.hidden) {
+      setCaptureHelpOpen(false);
+      captureHelpBtn.focus();
+    }
+  });
 });
